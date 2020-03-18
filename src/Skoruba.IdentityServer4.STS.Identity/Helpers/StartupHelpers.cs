@@ -34,13 +34,16 @@ using Iserv.IdentityServer4.BusinessLogic.Settings;
 using Skoruba.IdentityServer4.Admin.EntityFramework.Shared.Entities.Identity;
 using System.Net.Http;
 using System.Net;
+using Iserv.IdentityServer4.BusinessLogic.Interfaces;
 using Iserv.IdentityServer4.BusinessLogic.Providers;
+using Iserv.IdentityServer4.BusinessLogic.Senders;
 using Iserv.IdentityServer4.BusinessLogic.TokenValidators;
 using Iserv.IdentityServer4.BusinessLogic.Validators;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
+using ISmsService = Iserv.IdentityServer4.BusinessLogic.Sms.ISmsService;
 
 namespace Skoruba.IdentityServer4.STS.Identity.Helpers
 {
@@ -522,6 +525,7 @@ namespace Skoruba.IdentityServer4.STS.Identity.Helpers
                 .AddScoped<IAccountService<UserIdentity, string>, AccountService<TIdentityDbContext, UserIdentity, UserIdentityRole, string, UserIdentityUserClaim,
                     UserIdentityUserRole, UserIdentityUserLogin, UserIdentityRoleClaim, UserIdentityUserToken>>();
             services.AddHostedService<AuthPortalHostedService>();
+            services.AddSingleton<ISender, Sender>();
         }
     }
 }

@@ -16,6 +16,11 @@
         public string WebClientSecret { get; set; }
         
         /// <summary>
+        /// Публичный ключ Web приложения
+        /// </summary>
+        public string WebClientPublic { get; set; }
+        
+        /// <summary>
         /// Id Android приложения
         /// </summary>
         public string AndroidClientId { get; set; }
@@ -57,8 +62,13 @@
         public SocialParams FacebookParams { get; set; }
         
         /// <summary>
-        /// Параметры Vk
+        /// Параметры Вконтакте
         /// </summary>
         public SocialParams VkParams { get; set; }
+        
+        /// <summary>
+        /// Параметры Одноклассники
+        /// </summary>
+        public SocialParams OkParams { get; set; }
     }
 }

@@ -1,9 +1,11 @@
-﻿using Iserv.IdentityServer4.BusinessLogic.ExceptionHandling;
+﻿using System;
+using Iserv.IdentityServer4.BusinessLogic.ExceptionHandling;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Logging;
 using System.ComponentModel.DataAnnotations;
 using System.Net;
+using System.Net.Http;
 
 namespace Iserv.IdentityServer4.BusinessLogic.Filters
 {
@@ -15,23 +17,49 @@ namespace Iserv.IdentityServer4.BusinessLogic.Filters
             _logger = logger;
         }
 
-        public void OnException(ExceptionContext context)
+        private IActionResult getResult(HttpStatusCode status, Exception exception)
         {
-            var status = context.HttpContext.Response.StatusCode == HttpStatusCode.OK.GetHashCode() ? HttpStatusCode.BadRequest : (HttpStatusCode)context.HttpContext.Response.StatusCode;
             var title = "Россети - Мобильный личный кабинет";
-            if (context.Exception is PortalException) {
+            if (exception is PortalException) {
                 title = "Россети - Портал ТП";
             }
-            if (!(context.Exception is ValidationException))
+            if (!(exception is ValidationException))
             {
-                _logger.LogError(context.Exception.Message, context.Exception);
+                _logger.LogError(exception.Message, exception);
             }
-            context.Result = new BadRequestObjectResult(new
+
+            var msg = exception.Message;
+            if (exception is HttpRequestException)
+            {
+                _logger.LogError(exception.Message, exception);
+                msg = "Не удалось выполнить запрос.";
+            }
+
+            return new BadRequestObjectResult(new
             {
                 status,
                 title,
-                text = context.Exception.Message
+                text = msg
             });
+        }
+        
+        public void OnException(ExceptionContext context)
+        {
+            var status = context.HttpContext.Response.StatusCode == HttpStatusCode.OK.GetHashCode() ? HttpStatusCode.BadRequest : (HttpStatusCode)context.HttpContext.Response.StatusCode;
+
+            if (context.Exception is AggregateException)
+            {
+                ((AggregateException)context.Exception).Handle((x) =>
+                {
+                    context.Result = getResult(status, context.Exception);
+                    return false;
+                });
+            }
+            else
+            {
+                context.Result = getResult(status, context.Exception);
+            }
+
             context.ExceptionHandled = true;
         }
     }

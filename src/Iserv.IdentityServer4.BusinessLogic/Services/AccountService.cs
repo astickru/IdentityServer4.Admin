@@ -266,6 +266,7 @@ namespace Iserv.IdentityServer4.BusinessLogic.Services
 
             if (!string.IsNullOrWhiteSpace(model.Email))
             {
+                model.Email = model.Email.ToLower();
                 ValidEmail(model.Email);
                 var userLocal = await _userManager.FindByEmailAsync(model.Email);
                 if (userLocal != null)
@@ -315,7 +316,7 @@ namespace Iserv.IdentityServer4.BusinessLogic.Services
             {
                 values.Add(val.Key, null);
             }
-
+            model.Email = model.Email?.ToLower();
             if (!string.IsNullOrWhiteSpace(model.Email) && user.Email != model.Email)
             {
                 ValidEmail(model.Email);
@@ -337,6 +338,7 @@ namespace Iserv.IdentityServer4.BusinessLogic.Services
 
         public async Task ChangeEmailAsync(TUser user, string email, string code)
         {
+            email = email.ToLower();
             if (user == null)
                 throw new ValidationException("UserNotFound");
             if (string.IsNullOrWhiteSpace(email))
