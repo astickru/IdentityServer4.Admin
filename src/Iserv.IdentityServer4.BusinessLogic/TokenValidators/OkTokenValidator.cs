@@ -26,14 +26,13 @@ namespace Iserv.IdentityServer4.BusinessLogic.TokenValidators
         {
             _okParams = socialOptions.OkParams;
             _accessTokenEndpoint =
-                // $"https://api.ok.ru/fb.do?application_key=COIGFJJGDIHBABABA&format=json&method=users.getCurrentUser&sig=818ad8b3f0812a56da5b92df8ef7f663&access_token=
                 $"https://api.ok.ru/fb.do?application_key={socialOptions.OkParams.WebClientPublic}&format=json&method=users.getCurrentUser&sig={SigReplacement}&access_token={AccessTokenReplacement}";
             _logger = logger;
         }
 
         public async Task<TokenValidationResult> ValidateAccessTokenAsync(string token, string expectedScope = null)
         {
-            if (string.IsNullOrWhiteSpace(token)) return new TokenValidationResult {IsError = true, ErrorDescription = "Код авторизации не указан"};
+            if (string.IsNullOrWhiteSpace(token)) return new TokenValidationResult {IsError = true, ErrorDescription = "Токен авторизации не указан"};
             var md5Hasher = MD5.Create();
             var hash = md5Hasher.ComputeHash(Encoding.Default.GetBytes($"{token}{_okParams.WebClientSecret}"));
             var sBuilder = new StringBuilder();
@@ -56,7 +55,7 @@ namespace Iserv.IdentityServer4.BusinessLogic.TokenValidators
             var response = await client.GetAsync(_accessTokenEndpoint.Replace(AccessTokenReplacement, token).Replace(SigReplacement, sig));
             if (!response.IsSuccessStatusCode)
             {
-                const string msg = "Не удалось получить access_token Одноклассники";
+                const string msg = "Не удалось получить данные пользователя Одноклассники";
                 _logger.LogWarning(msg + ". " + response.ReasonPhrase);
                 return new TokenValidationResult {IsError = true, ErrorDescription = msg};
             }

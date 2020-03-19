@@ -414,9 +414,6 @@ namespace Iserv.IdentityServer4.BusinessLogic.Services
             var vEmail = new EmailAddressAttribute();
             if (!vEmail.IsValid(email))
                 throw new ValidationException(vEmail.ErrorMessage);
-            var user = await FindByEmailAsync(email);
-            if (user == null)
-                throw new ValidationException($"User with email = '{email}' not found");
             var result = await _portalService.RestorePasswordByEmailAsync(email);
             if (result.IsError)
                 throw new PortalException(result.Message);
@@ -429,7 +426,7 @@ namespace Iserv.IdentityServer4.BusinessLogic.Services
             ValidPhone(phoneNumber);
             var user = await _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber == phoneNumber);
             if (user == null)
-                throw new ValidationException($"The user with the phone number {phoneNumber} was not found");
+                throw new ValidationException($"Пользователь с телефонным номером {phoneNumber} не зарегистрирован в системе");
             if (user.Idext == null)
                 throw new ValidationException($"Idext is not defined");
             await _confirmService.ConfirmSmsAsync(phoneNumber, ActionNamePwd, _messageTemplates.RepairPasswordSms);
@@ -447,7 +444,7 @@ namespace Iserv.IdentityServer4.BusinessLogic.Services
             ValidSmsCodeChangePassword(phoneNumber, code);
             var user = await _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber == phoneNumber);
             if (user == null)
-                throw new ValidationException($"The user with the phone number {phoneNumber} was not found");
+                throw new ValidationException($"Пользователь с телефонным номером {phoneNumber} не зарегистрирован в системе");
             if (user.Idext == null)
                 throw new ValidationException($"Idext is not defined");
             await UpdatePasswordAsync(user, password);

@@ -4,46 +4,36 @@ using System.Linq;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using IdentityServer4.Models;
 using IdentityServer4.Validation;
-using Iserv.IdentityServer4.BusinessLogic.Settings;
 using Microsoft.Extensions.Logging;
 
 namespace Iserv.IdentityServer4.BusinessLogic.TokenValidators
 {
     public class VkTokenValidator : IVkTokenValidator
     {
-        private readonly string _accessTokenEndpoint;
         private const string UserInfoEndpoint = "https://api.vk.com/method/users.get?fields=nickname&access_token={token}&v=5.103";
-        private const string AuthCodeReplacement = "{code}";
         private const string AccessTokenReplacement = "{token}";
         private readonly ILogger<VkTokenValidator> _logger;
 
-        public VkTokenValidator(SocialOptions socialOptions, ILogger<VkTokenValidator> logger)
+        public VkTokenValidator(ILogger<VkTokenValidator> logger)
         {
-            var vkParams = socialOptions.VkParams;
-            _accessTokenEndpoint =
-                $"https://oauth.vk.com/access_token?client_id={vkParams.AndroidClientId}&client_secret={vkParams.AndroidClientSecret}&redirect_uri=https://com.mlk/vk?&code={AuthCodeReplacement}";
             _logger = logger;
         }
 
-        public async Task<TokenValidationResult> ValidateAccessTokenAsync(string code, string expectedScope = null)
+        public async Task<TokenValidationResult> ValidateAccessTokenAsync(string token, string expectedScope = null)
         {
-            if (string.IsNullOrWhiteSpace(code)) return new TokenValidationResult {IsError = true, ErrorDescription = "Код авторизации не указан"};
+            if (string.IsNullOrWhiteSpace(token)) return new TokenValidationResult {IsError = true, ErrorDescription = "Токен авторизации не указан"};
+            var regex = new Regex("email=(.*@.*\\..*$)");
+            if (!regex.IsMatch(token))
+                return new TokenValidationResult {IsError = true, ErrorDescription = "Не указан в токене email"};
+            var email = regex.Match(token).Groups[1].Value;
+            if (string.IsNullOrWhiteSpace(email)) return new TokenValidationResult {IsError = true, ErrorDescription = "Не указан в токене email"};
+            token = token.Replace("email=" + email, "");
             using var client = new HttpClient();
-            var response = await client.GetAsync(_accessTokenEndpoint.Replace(AuthCodeReplacement, code));
-            if (!response.IsSuccessStatusCode)
-            {
-                const string msg = "Не удалось получить access_token VK";
-                _logger.LogWarning(msg + ". " + response.ReasonPhrase);
-                return new TokenValidationResult {IsError = true, ErrorDescription = msg};
-            }
-
-            var jsonDocument = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
-            var email = jsonDocument.RootElement.GetProperty("email").ToString();
-            var token = jsonDocument.RootElement.GetProperty("access_token").ToString();
-            response = await client.GetAsync(UserInfoEndpoint.Replace(AccessTokenReplacement, token));
+            var response = await client.GetAsync(UserInfoEndpoint.Replace(AccessTokenReplacement, token));
             if (!response.IsSuccessStatusCode)
             {
                 const string msg = "Не удалось получить данные пользователя VK";
@@ -51,7 +41,7 @@ namespace Iserv.IdentityServer4.BusinessLogic.TokenValidators
                 return new TokenValidationResult {IsError = true, ErrorDescription = msg};
             }
 
-            jsonDocument = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+            var jsonDocument = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
             var claimList = new List<Claim> {new Claim("email", email)};
             var item = jsonDocument.RootElement.EnumerateObject().FirstOrDefault();
             if (item.Name == "error")
