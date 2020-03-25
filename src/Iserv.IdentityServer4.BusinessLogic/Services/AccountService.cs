@@ -16,6 +16,7 @@ using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using System.Web;
 using Iserv.IdentityServer4.BusinessLogic.ExceptionHandling;
+using Newtonsoft.Json;
 
 namespace Iserv.IdentityServer4.BusinessLogic.Services
 {
@@ -105,14 +106,30 @@ namespace Iserv.IdentityServer4.BusinessLogic.Services
             return await _dbContext.Users.FirstOrDefaultAsync(u => u.Idext == idext);
         }
 
-        public async Task<Dictionary<string, string>> GetExtraFieldsAsync(TUser user)
+        public async Task<Dictionary<string, dynamic>> GetExtraFieldsAsync(TUser user)
         {
-            return (await _userManager.GetClaimsAsync(user)).ToDictionary(c => c.Type, c => c.Value switch
+            var result = new Dictionary<string, dynamic>();
+            var claims = await _userManager.GetClaimsAsync(user);
+            foreach (var claim in claims)
             {
-                "True" => "true",
-                "False" => "false",
-                _ => c.Value
-            });
+                if (string.IsNullOrWhiteSpace(claim.Type) || string.IsNullOrWhiteSpace(claim.Value))
+                    continue;
+                if (claim.Value[0] == '{')
+                {
+                    result.Add(claim.Type, JsonConvert.DeserializeObject<dynamic>(claim.Value));
+                }
+                else
+                {
+                    result.Add(claim.Type, claim.Value switch
+                    {
+                        "True" => "true",
+                        "False" => "false",
+                        _ => claim.Value
+                    });
+                }
+            }
+
+            return result;
         }
 
         public async Task<IdentityResult> CreateUserFromPortalAsync(Guid idext, string password)
@@ -316,6 +333,7 @@ namespace Iserv.IdentityServer4.BusinessLogic.Services
             {
                 values.Add(val.Key, null);
             }
+
             model.Email = model.Email?.ToLower();
             if (!string.IsNullOrWhiteSpace(model.Email) && user.Email != model.Email)
             {

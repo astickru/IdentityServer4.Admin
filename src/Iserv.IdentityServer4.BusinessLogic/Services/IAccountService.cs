@@ -41,7 +41,7 @@ namespace Iserv.IdentityServer4.BusinessLogic.Services
         /// </summary>
         /// <param name="user">Пользователь</param>
         /// <returns>Дополнительные поля пользователя</returns>
-        Task<Dictionary<string, string>> GetExtraFieldsAsync(TUser user);
+        Task<Dictionary<string, dynamic>> GetExtraFieldsAsync(TUser user);
 
         /// <summary>
         /// Создание нового пользователя из портала
