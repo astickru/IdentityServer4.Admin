@@ -6,7 +6,7 @@ FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster AS build
 
 WORKDIR /src
 
-COPY ["src/Iserv.IdentityServer4.BusinessLogic/lib/Infrastructure.Tracing.dll", "src/Skoruba.IdentityServer4.STS.Identity/"]
+COPY ["src/Iserv.IdentityServer4.BusinessLogic/Lib/Infrastructure.Tracing.dll", "src/Skoruba.IdentityServer4.STS.Identity/"]
 
 COPY ["src/Skoruba.IdentityServer4.STS.Identity/Skoruba.IdentityServer4.STS.Identity.csproj", "src/Skoruba.IdentityServer4.STS.Identity/"]
 COPY ["src/Skoruba.IdentityServer4.Admin.EntityFramework.MySql/Skoruba.IdentityServer4.Admin.EntityFramework.MySql.csproj", "src/Skoruba.IdentityServer4.Admin.EntityFramework.MySql/"]
