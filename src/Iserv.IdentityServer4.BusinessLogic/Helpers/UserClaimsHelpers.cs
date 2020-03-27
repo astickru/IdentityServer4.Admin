@@ -12,7 +12,7 @@ namespace Iserv.IdentityServer4.BusinessLogic.Helpers
     public static class UserClaimsHelpers
     {
         private const string FieldId = "id";
-        private const string FieldIdExt = "idext";
+        public const string FieldIdExt = "idext";
         private const string FieldLogin = "login";
         private const string FieldPassword = "password";
         private static readonly string[] FieldsEmail = new string[] {"email", "e_mail"};

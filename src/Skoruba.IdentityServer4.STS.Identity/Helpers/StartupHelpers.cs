@@ -34,6 +34,7 @@ using Iserv.IdentityServer4.BusinessLogic.Settings;
 using Skoruba.IdentityServer4.Admin.EntityFramework.Shared.Entities.Identity;
 using System.Net.Http;
 using System.Net;
+using IdentityServer4.Services;
 using Iserv.IdentityServer4.BusinessLogic.Interfaces;
 using Iserv.IdentityServer4.BusinessLogic.Providers;
 using Iserv.IdentityServer4.BusinessLogic.Senders;
@@ -313,6 +314,8 @@ namespace Skoruba.IdentityServer4.STS.Identity.Helpers
             services.AddScoped<IYandexTokenValidator, YandexTokenValidator>();
             services.AddScoped<IVkTokenValidator, VkTokenValidator>();
             services.AddScoped<IOkTokenValidator, OkTokenValidator>();
+            
+            services.AddTransient<IProfileService, IdentityClaimsProfileService>();
 
             builder.AddCustomSigningCredential(configuration);
             builder.AddCustomValidationKey(configuration);
