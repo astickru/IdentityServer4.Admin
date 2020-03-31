@@ -13,6 +13,8 @@ namespace Iserv.IdentityServer4.BusinessLogic.Helpers
     {
         private const string FieldId = "id";
         public const string FieldIdExt = "idext";
+        public const string FieldDeviceTrusted = "devtrust";
+        public const string FieldDeviceId = "devid";
         private const string FieldLogin = "login";
         private const string FieldPassword = "password";
         private static readonly string[] FieldsEmail = new string[] {"email", "e_mail"};

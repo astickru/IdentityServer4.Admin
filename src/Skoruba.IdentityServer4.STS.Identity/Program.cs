@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using Iserv.IdentityServer4.BusinessLogic.Extension;
+using Iserv.IdentityServer4.BusinessLogic.Tracing;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;

@@ -26,6 +26,8 @@ namespace Iserv.IdentityServer4.BusinessLogic.Services
         public async Task GetProfileDataAsync(ProfileDataRequestContext context)
         {
             var sub = context.Subject.GetSubjectId();
+            var deviceTrusted = context.ValidatedRequest.Raw.Get("device_trusted") == "true";
+            var deviceId = context.ValidatedRequest.Raw.Get("device_id");
             var user = await _userManager.FindByIdAsync(sub);
             var principal = await _claimsFactory.CreateAsync(user);
             var roles = await _userManager.GetRolesAsync(user);
@@ -33,6 +35,11 @@ namespace Iserv.IdentityServer4.BusinessLogic.Services
             claims = claims.Where(claim => context.RequestedClaimTypes.Contains(claim.Type)).ToList();
             claims.Add(new Claim(UserClaimsHelpers.FieldIdExt, user.Idext.ToString()));
             claims.Add(new Claim(IdentityServerConstants.StandardScopes.Email, user.Email));
+            claims.Add(new Claim(UserClaimsHelpers.FieldDeviceTrusted, deviceTrusted ? "1" : "0"));
+            if (!string.IsNullOrWhiteSpace(deviceId))
+            {
+                claims.Add(new Claim(UserClaimsHelpers.FieldDeviceId, deviceId));
+            }
             claims.AddRange(roles.Select(role => new Claim(JwtClaimTypes.Role, role)));
             context.IssuedClaims = claims;
         }
