@@ -1,6 +1,7 @@
 ﻿using HealthChecks.UI.Client;
 using Iserv.IdentityServer4.BusinessLogic.Extension;
 using Iserv.IdentityServer4.BusinessLogic.Filters;
+using Iserv.IdentityServer4.BusinessLogic.Tracing;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
@@ -94,6 +95,7 @@ namespace Skoruba.IdentityServer4.STS.Identity
 
             app.UseStaticFiles();
             UseAuthentication(app);
+            app.UseSystemVersion();
             app.UseMvcLocalizationServices();
 
             app.UseRouting();
