@@ -1,15 +1,14 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Internal;
-using Microsoft.Extensions.Logging;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 
-namespace Iserv.AccountService.Infrastucture.Tracing
+namespace Iserv.IdentityServer4.BusinessLogic.Tracing
 {
     public sealed class TracingMiddleware
     {
@@ -32,35 +31,24 @@ namespace Iserv.AccountService.Infrastucture.Tracing
 			{
 				{
 					var request = httpContext.Request;
-
 					var header = string.Join("; ", request.Headers.Select(h => h.Key + "=" + string.Join(", ", h.Value)));
 					activeSpan.SetTag("http.request.header", header);
-
-					var body = await GetRequestBody(httpContext);
+					var body = await GetRequestBodyAsync(httpContext);
 					activeSpan.SetTag("http.request.body", body);
-
 					_logger.LogInformation("Начало обработки запроса");
 				}
 
 				using (var responseBody = new MemoryStream())
 				{
 					var response = httpContext.Response;
-
 					response.Body = responseBody;
-
 					await _next(httpContext);
-
 					var header = string.Join("; ", response.Headers.Select(h => h.Key + "=" + string.Join(", ", h.Value)));
 					activeSpan.SetTag("http.response.header", header);
-
 					var body = await GetResponseBody(response);
-
 					await responseBody.CopyToAsync(originalBodyStream);
-
 					response.Body = originalBodyStream;
-
 					activeSpan.SetTag("http.response.result", body);
-
 					_logger.LogInformation("Завершение обработки запроса");
 				}
 			}
@@ -85,25 +73,19 @@ namespace Iserv.AccountService.Infrastucture.Tracing
 		private static async Task<string> GetResponseBody(HttpResponse response)
 		{
 			response.Body.Seek(0, SeekOrigin.Begin);
-
 			var body = await new StreamReader(response.Body).ReadToEndAsync();
-
 			response.Body.Seek(0, SeekOrigin.Begin);
-
 			return body;
 		}
 
-		private static async Task<string> GetRequestBody(HttpContext context)
+		private async static Task<string> GetRequestBodyAsync(HttpContext context)
 		{
-			context.Request.EnableRewind();
-
-			var bufferSize = context.Request.ContentLength.HasValue && context.Request.ContentLength > 0 && context.Request.ContentLength < 1024 ? 
-				Convert.ToInt32(context.Request.ContentLength) : 1024;
-			
-     		var body = await new StreamReader(context.Request.Body, System.Text.Encoding.UTF8, true, bufferSize, true).ReadToEndAsync();
-
-			context.Request.Body.Seek(0, SeekOrigin.Begin);
-
+			context.Request.EnableBuffering();
+			var rd = await context.Request.BodyReader.ReadAsync();
+			context.Request.Body.Position = 0;
+			var buffer = rd.Buffer;
+			var body = Encoding.UTF8.GetString(buffer.FirstSpan);
+			context.Request.Body.Position = 0;
 			return body;
 		}
 	}

@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net;
+﻿using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.Filters;
 using OpenTracing;
 
-namespace Iserv.AccountService.Infrastucture.Tracing
+namespace Iserv.IdentityServer4.BusinessLogic.Tracing
 {
     public class TracingExceptionFilter : IExceptionFilter
     {

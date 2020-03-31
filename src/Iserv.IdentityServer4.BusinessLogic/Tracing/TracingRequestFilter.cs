@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using OpenTracing;
 
-namespace Iserv.IdentityServer4.BusinessLogic.Extension
+namespace Iserv.IdentityServer4.BusinessLogic.Tracing
 {
     public class TracingRequestFilter : Microsoft.AspNetCore.Mvc.Filters.IResourceFilter
     {
