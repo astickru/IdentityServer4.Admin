@@ -1,4 +1,4 @@
-param([string] $migration = 'DbInit', [string] $migrationProviderName = 'All')
+param([string] $migration = 'DbInit', [string] $migrationProviderName = 'All', [string] $migrationProviderName = 'All')
 $projectName = "Skoruba.IdentityServer4";
 $currentPath = Get-Location
 Set-Location "../src/$projectName.Admin"

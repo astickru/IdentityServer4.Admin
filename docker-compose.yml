@@ -88,8 +88,24 @@ services:
       ACCEPT_EULA: "Y"
     volumes:
       - dbdata:/var/opt/mssql
+        
+  db_pg:
+    container_name: db_pg
+    hostname: db_pg
+    image: postgres
+    restart: always
+    environment:
+      - PGDB_PGUSER=idt
+      - POSTGRES_DB=idt
+      - POSTGRES_USER=idt
+      - POSTGRES_PASSWORD=123qwe
+    volumes:
+      - db_pg_data:/var/lib/postgresql/data/
+    ports:
+      - 5432:5432
 
 volumes:
+  db_pg_data:
   dbdata:
     driver: local
 
