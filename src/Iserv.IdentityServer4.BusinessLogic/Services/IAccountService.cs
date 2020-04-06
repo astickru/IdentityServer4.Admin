@@ -35,6 +35,14 @@ namespace Iserv.IdentityServer4.BusinessLogic.Services
         /// <param name="idext">Внешний id портала</param>
         /// <returns>Пользователь</returns>
         Task<TUser> FindByIdextAsync(Guid idext);
+        
+        /// <summary>
+        /// Поиск пользователя по внешнему id портала
+        /// </summary>
+        /// <param name="deviceId">Id устройства пользователя</param>
+        /// <param name="deviceToken">Токен устройства пользователя</param>
+        /// <returns>Пользователь</returns>
+        Task<TUser> FindByDeviceIdAsync(string deviceId, string deviceToken);
 
         /// <summary>
         /// Получение дополнительных полей пользователя
@@ -162,5 +170,12 @@ namespace Iserv.IdentityServer4.BusinessLogic.Services
         /// <param name="code">Код смс восстановления пароля</param>
         /// <param name="password">Новый пароль</param>
         Task ChangePasswordBySmsAsync(string phoneNumber, string code, string password);
+
+        /// <summary>
+        /// Добавление устройства как доверительное 
+        /// </summary>
+        /// <param name="userId">Id пользователя</param>
+        /// <param name="model">Данные регистрации нового пользователя</param>
+        Task AddDeviceIdAsync(TKey userId, DeviceIdModel model);
     }
 }

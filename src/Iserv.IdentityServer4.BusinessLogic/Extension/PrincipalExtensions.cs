@@ -17,6 +17,16 @@ namespace Iserv.IdentityServer4.BusinessLogic.Extension
             return Guid.Parse(principal.FindFirstValue(JwtRegisteredClaimNames.Sub));
         }
         
+        public static Guid GetUserId<TKey>(this ClaimsPrincipal principal)
+        {
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
+
+            return Guid.Parse(principal.FindFirstValue(JwtRegisteredClaimNames.Sub));
+        }
+        
         public static Guid GetUserExtId(this ClaimsPrincipal principal)
         {
             if (principal == null)

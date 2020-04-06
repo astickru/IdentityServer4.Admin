@@ -238,5 +238,21 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
             await _accountService.ChangePasswordBySmsAsync(model.PhoneNumber, model.SmsCode, model.Password);
             return Ok();
         }
+        
+        /// <summary>
+        /// Добавление устройства как доверительное 
+        /// </summary>
+        /// <param name="model">Данные регистрации нового пользователя</param>
+        [HttpPost]
+        [AllowAnonymous]
+        [Route("addTrustedDevice")]
+        public async Task<IActionResult> AddDeviceIdAsync([FromBody] DeviceIdModel model)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState.Values);
+
+            await _accountService.AddDeviceIdAsync((TKey)User.GetUserId(), model);
+            return Ok();
+        }
     }
 }

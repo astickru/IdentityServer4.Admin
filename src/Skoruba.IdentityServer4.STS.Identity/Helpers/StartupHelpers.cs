@@ -44,6 +44,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
+using Skoruba.IdentityServer4.Admin.EntityFramework.Shared.DbContexts;
 using ISmsService = Iserv.IdentityServer4.BusinessLogic.Sms.ISmsService;
 
 namespace Skoruba.IdentityServer4.STS.Identity.Helpers
@@ -455,7 +456,7 @@ namespace Skoruba.IdentityServer4.STS.Identity.Helpers
         }
 
         public static void AddAccountService<TIdentityDbContext>(this IServiceCollection services, IConfiguration configuration)
-            where TIdentityDbContext : IdentityDbContext<UserIdentity, UserIdentityRole, string, UserIdentityUserClaim, UserIdentityUserRole, UserIdentityUserLogin,
+            where TIdentityDbContext : AdminIdentityDbContext<UserIdentity, UserIdentityRole, string, UserIdentityUserClaim, UserIdentityUserRole, UserIdentityUserLogin,
                 UserIdentityRoleClaim, UserIdentityUserToken>
         {
             var repairPwdSmsExpiration = 300;

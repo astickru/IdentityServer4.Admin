@@ -9,7 +9,6 @@ using Skoruba.IdentityServer4.Admin.EntityFramework.Shared.Entities.Identity;
 using Iserv.IdentityServer4.BusinessLogic.Helpers;
 using Iserv.IdentityServer4.BusinessLogic.Settings;
 using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 using System.Text.Encodings.Web;
@@ -17,11 +16,12 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using System.Web;
 using Iserv.IdentityServer4.BusinessLogic.ExceptionHandling;
 using Newtonsoft.Json;
+using Skoruba.IdentityServer4.Admin.EntityFramework.Shared.DbContexts;
 
 namespace Iserv.IdentityServer4.BusinessLogic.Services
 {
     public class AccountService<TIdentityDbContext, TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TRoleClaim, TUserToken> : IAccountService<TUser, TKey>
-        where TIdentityDbContext : IdentityDbContext<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TRoleClaim, TUserToken>
+        where TIdentityDbContext : AdminIdentityDbContext<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TRoleClaim, TUserToken>
         where TUser : UserIdentity<TKey>, new()
         where TRole : IdentityRole<TKey>
         where TKey : IEquatable<TKey>
@@ -104,6 +104,18 @@ namespace Iserv.IdentityServer4.BusinessLogic.Services
         public async Task<TUser> FindByIdextAsync(Guid idext)
         {
             return await _dbContext.Users.FirstOrDefaultAsync(u => u.Idext == idext);
+        }
+
+        public async Task<TUser> FindByDeviceIdAsync(string deviceId, string deviceToken)
+        {
+            return await (from d in _dbContext.UserDeviceIds
+                join u in _dbContext.Users on d.UserId equals u.Id
+                where d.DeviceId == deviceId && d.Value == deviceToken
+                select u).FirstOrDefaultAsync();
+
+            // return await _dbContext.UserDeviceIds
+            //     .Join(_dbContext.Users, d => d.UserId, u => u.Id, (d, u) => new {d, u})
+            //     .Where(z => z.d.DeviceId == deviceId && z.d.Value == deviceToken).Select(z => z.u).FirstOrDefaultAsync();
         }
 
         public async Task<Dictionary<string, dynamic>> GetExtraFieldsAsync(TUser user)
@@ -466,6 +478,30 @@ namespace Iserv.IdentityServer4.BusinessLogic.Services
             if (user.Idext == null)
                 throw new ValidationException($"Idext is not defined");
             await UpdatePasswordAsync(user, password);
+        }
+
+        public async Task AddDeviceIdAsync(TKey userId, DeviceIdModel model)
+        {
+            if (userId == null)
+                throw new ValidationException("Id пользователя не указано");
+            if (string.IsNullOrWhiteSpace(model.DeviceName))
+                throw new ValidationException("Не указано название устройства");
+            if (string.IsNullOrWhiteSpace(model.DeviceId))
+                throw new ValidationException("Не указан Id устройства");
+            if (string.IsNullOrWhiteSpace(model.DeviceToken))
+                throw new ValidationException("Не указан токен устройства");
+            if (await _dbContext.UserDeviceIds.AnyAsync(d => d.DeviceId == model.DeviceId && d.Value == model.DeviceId))
+                throw new ValidationException("Устройство уже имеется в системе");
+            _dbContext.UserDeviceIds.Add(new UserIdentityUserDeviceId<TKey>()
+            {
+                CreateDate = DateTime.Now,
+                DeviceIdType = model.DeviceIdType,
+                DeviceId = model.DeviceId,
+                DeviceName = model.DeviceName,
+                Value = model.DeviceToken,
+                UserId = userId
+            });
+            await _dbContext.SaveChangesAsync();
         }
     }
 }

@@ -1,4 +1,4 @@
-param([string] $migration = 'DbInit', [string] $migrationProviderName = 'All', [string] $migrationProviderName = 'All')
+param([string] $migration = 'DbInit', [string] $migrationProviderName = 'All', [string] $migrationContext = 'All')
 $projectName = "Skoruba.IdentityServer4";
 $currentPath = Get-Location
 Set-Location "../src/$projectName.Admin"
@@ -6,12 +6,31 @@ Copy-Item appsettings.json -Destination appsettings-backup.json
 $settings = Get-Content appsettings.json -raw
 
 #Initialze db context and define the target directory
-$targetContexts = @{ 
-    AdminIdentityDbContext                = "Migrations\Identity"
-    AdminLogDbContext                     = "Migrations\Logging";
-    IdentityServerConfigurationDbContext  = "Migrations\IdentityServerConfiguration";
-    IdentityServerPersistedGrantDbContext = "Migrations\IdentityServerGrants";
-    AdminAuditLogDbContext                = "Migrations\AuditLogging";
+if ($migrationContext -eq 'All') {
+    $targetContexts = @{ 
+        AdminIdentityDbContext                = "Migrations\Identity"
+        AdminLogDbContext                     = "Migrations\Logging";
+        IdentityServerConfigurationDbContext  = "Migrations\IdentityServerConfiguration";
+        IdentityServerPersistedGrantDbContext = "Migrations\IdentityServerGrants";
+        AdminAuditLogDbContext                = "Migrations\AuditLogging";
+    }
+} else {
+    $targetContexts = @{}
+    if ($migrationContext -eq "Identity") {
+        $targetContexts.AdminIdentityDbContext = "Migrations\Identity"
+    }
+    if ($migrationContext -eq "Logging") {
+        $targetContexts.AdminIdentityDbContext = "Migrations\Logging"
+    }
+    if ($migrationContext -eq "IdentityServerConfiguration") {
+        $targetContexts.AdminIdentityDbContext = "Migrations\IdentityServerConfiguration"
+    }
+    if ($migrationContext -eq "IdentityServerGrants") {
+        $targetContexts.AdminIdentityDbContext = "Migrations\IdentityServerGrants"
+    }
+    if ($migrationContext -eq "AuditLogging") {
+        $targetContexts.AdminIdentityDbContext = "Migrations\AuditLogging"
+    }
 }
 
 #Initialize the db providers and it's respective projects
